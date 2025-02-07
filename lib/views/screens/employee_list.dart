@@ -90,11 +90,10 @@ class _EmployeeListState extends State<EmployeeList> {
                                   onPressed: () {
                                     _bloc
                                         .add(AddEmployee(employeesList[index]));
-                                    _bloc.add(LoadEmployees());
                                   }),
                             ),
                           );
-                          _bloc.add(LoadEmployees());
+                          // _bloc.add(LoadEmployees());
                         },
                         background: Container(
                             color: const Color(0xFFF34642),
@@ -141,7 +140,7 @@ class _EmployeeListState extends State<EmployeeList> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return BlocBuilder<EmployeeBloc, EmployeeState>(
+    return BlocConsumer<EmployeeBloc, EmployeeState>(
       builder: (BuildContext context, EmployeeState state) {
         if (state is EmployeesLoadedSuccess) {
           bool isNotEmptyLists = state.currentEmployees.isNotEmpty ||
@@ -207,6 +206,13 @@ class _EmployeeListState extends State<EmployeeList> {
               ));
         } else {
           return const SizedBox.shrink();
+        }
+      },
+      listener: (_, state) {
+        if (state is EmployeeAddedSuccess ||
+            state is EmployeeEditedSuccess ||
+            state is EmployeeDeletedSuccess) {
+          _bloc.add(LoadEmployees());
         }
       },
     );
