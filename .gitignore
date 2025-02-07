@@ -10,16 +10,6 @@
 .svn/
 migrate_working_dir/
 
-.metadata
-analysis_options.yaml
-android/
-ios/
-linux/
-macos/
-test/
-web/
-windows/
-
 # IntelliJ related
 *.iml
 *.ipr

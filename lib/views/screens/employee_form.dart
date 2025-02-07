@@ -97,7 +97,7 @@ class _EmployeeFormState extends State<EmployeeForm> {
           child: TextFormField(
             controller: _employeeNameController,
             style: Theme.of(context).textTheme.bodyMedium,
-            keyboardType: TextInputType.name,
+            keyboardType: TextInputType.text,
             onTap: () {
               // Remove error message when field is on focus
               _formKey.currentState?.reset();
@@ -109,11 +109,14 @@ class _EmployeeFormState extends State<EmployeeForm> {
               });
             },
             validator: (value) {
-              if (value!.trim().isEmpty) {
+              if (value!.trim().isEmpty ||
+                  !(RegExp(r'^[A-Za-z ]{2,50}$')).hasMatch(value)) {
                 setState(() {
                   _empNameTextFieldHeight = 65;
                 });
-                return "**Please enter employee name";
+                return value.trim().isEmpty
+                    ? "**Please enter employee name"
+                    : "**Please enter valid employee name";
               }
               setState(() {
                 _empNameTextFieldHeight = 40;
