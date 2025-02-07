@@ -2,7 +2,7 @@ import 'package:employee_management/config/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:employee_management/bloc/employee_bloc/employee_event.dart';
-import 'package:employee_management/data/models/employee.dart';
+import 'package:employee_management/data/models/sqflite/employee.dart';
 
 import 'package:employee_management/config/app_constants.dart';
 import 'package:employee_management/config/icon_constants.dart';

@@ -1,4 +1,4 @@
-import '../../data/models/employee.dart';
+import '../../data/models/sqflite/employee.dart';
 
 abstract class EmployeeState {}
 

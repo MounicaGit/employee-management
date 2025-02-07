@@ -1,4 +1,5 @@
 import 'package:employee_management/config/color_constants.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,7 +9,7 @@ import 'package:employee_management/bloc/employee_bloc/employee_state.dart';
 import 'package:employee_management/config/app_constants.dart';
 import 'package:employee_management/config/icon_constants.dart';
 import 'package:employee_management/config/utils.dart';
-import 'package:employee_management/data/models/employee.dart';
+import 'package:employee_management/data/models/sqflite/employee.dart';
 import 'package:employee_management/views/widgets/custom_date_picker.dart';
 
 class EmployeeForm extends StatefulWidget {
@@ -50,13 +51,15 @@ class _EmployeeFormState extends State<EmployeeForm> {
 
     //prefill employee data for edit action
     if (widget.employeeData != null) {
-      _employeeNameController.text = widget.employeeData!.name!;
-      _roleController.text = widget.employeeData!.role!;
-      _fromDate = Utils.formatToDateTime(widget.employeeData!.fromDate!);
+      _employeeNameController.text = widget.employeeData!.name;
+      _roleController.text = widget.employeeData!.role;
+      _fromDate = Utils.formatToDateTime(widget.employeeData!.fromDate);
       _toDate = widget.employeeData!.toDate != null
           ? Utils.formatToDateTime(widget.employeeData!.toDate!)
           : null;
     }
+
+    // Set initial values for custom date buttons
     setState(() {
       _selectedFromDateValue =
           widget.action == AppConstants.editemployee ? "" : AppConstants.today;
@@ -98,6 +101,7 @@ class _EmployeeFormState extends State<EmployeeForm> {
             controller: _employeeNameController,
             style: Theme.of(context).textTheme.bodyMedium,
             keyboardType: TextInputType.text,
+            cursorColor: Theme.of(context).primaryColor,
             onTap: () {
               // Remove error message when field is on focus
               _formKey.currentState?.reset();
@@ -110,7 +114,8 @@ class _EmployeeFormState extends State<EmployeeForm> {
             },
             validator: (value) {
               if (value!.trim().isEmpty ||
-                  !(RegExp(r'^[A-Za-z ]{2,50}$')).hasMatch(value)) {
+                  !(RegExp(r'^[A-Za-z ]{2,50}$')).hasMatch(value) ||
+                  value.trim().length < 2) {
                 setState(() {
                   _empNameTextFieldHeight = 65;
                 });
@@ -429,7 +434,6 @@ class _EmployeeFormState extends State<EmployeeForm> {
                         : AppConstants.current,
                   )));
                 }
-                _resetData();
               }
             },
             style: ElevatedButton.styleFrom(
@@ -460,7 +464,7 @@ class _EmployeeFormState extends State<EmployeeForm> {
               backgroundColor: ColorConstants.white,
               insetPadding: EdgeInsets.zero,
               contentPadding: const EdgeInsets.all(20),
-              actionsPadding: EdgeInsets.zero,
+              actionsPadding: const EdgeInsets.only(bottom: 10),
               buttonPadding: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
@@ -498,59 +502,75 @@ class _EmployeeFormState extends State<EmployeeForm> {
     Future.delayed(const Duration(milliseconds: 500), () {
       // Navigate back and load employees list with new changes
       Navigator.pop(context);
+      _resetData();
       _bloc.add(LoadEmployees());
     });
   }
 
+  AppBar _buildAppBar(ThemeData theme) => AppBar(
+        backgroundColor: theme.primaryColor,
+        automaticallyImplyLeading: false,
+        leading: null,
+        title: Text(
+          widget.action == AppConstants.editemployee
+              ? "Edit Employee Details"
+              : "Add Employee Details",
+          style: theme.textTheme.headlineMedium,
+          textAlign: TextAlign.left,
+        ),
+        actions: widget.action == AppConstants.editemployee
+            ? [
+                InkWell(
+                    onTap: () async {
+                      // Show delete confirmation dialog box
+                      await _showDeleteDialog();
+                    },
+                    child: Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: Image.asset(IconConstants.delete)))
+              ]
+            : null,
+      );
+
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
+    const bool isWeb = kIsWeb;
     return BlocConsumer<EmployeeBloc, EmployeeState>(
       builder: (context, state) {
         return Scaffold(
             backgroundColor: ColorConstants.white,
-            appBar: AppBar(
-              backgroundColor: theme.primaryColor,
-              automaticallyImplyLeading: false,
-              leading: null,
-              title: Text(
-                widget.action == AppConstants.editemployee
-                    ? "Edit Employee Details"
-                    : "Add Employee Details",
-                style: theme.textTheme.headlineMedium,
-                textAlign: TextAlign.left,
-              ),
-              actions: widget.action == AppConstants.editemployee
-                  ? [
-                      InkWell(
-                          onTap: () async {
-                            // Show delete confirmation dialog box
-                            await _showDeleteDialog();
-                          },
-                          child: Padding(
-                              padding: const EdgeInsets.all(15),
-                              child: Image.asset(IconConstants.delete)))
-                    ]
-                  : null,
-            ),
+            appBar: _buildAppBar(theme),
             bottomNavigationBar: _buildButtonsSection,
             resizeToAvoidBottomInset: true,
-            body: SingleChildScrollView(
-              child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 15),
-                      _buildEmployeeNameTextField,
-                      _buildRoleDropdown,
-                      _buildDateSection,
-                      if (state is EmployeesLoadingProgress)
-                        Center(
-                            child: CircularProgressIndicator(
-                                color: Theme.of(context).primaryColor))
-                    ],
-                  )),
-            ));
+            body: Align(
+                alignment: Alignment.topCenter,
+                child: SingleChildScrollView(
+                  child: Form(
+                      key: _formKey,
+                      child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                              minWidth: 300, minHeight: 500),
+                          child: Container(
+                              padding:
+                                  const EdgeInsets.only(top: isWeb ? 50 : 0),
+                              width: MediaQuery.of(context).size.width /
+                                  (isWeb ? 2.4 : 1),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 15),
+                                  _buildEmployeeNameTextField,
+                                  _buildRoleDropdown,
+                                  _buildDateSection,
+                                  if (state is EmployeesLoadingProgress)
+                                    Center(
+                                        child: CircularProgressIndicator(
+                                            color:
+                                                Theme.of(context).primaryColor))
+                                ],
+                              )))),
+                )));
       },
       listener: (BuildContext context, EmployeeState state) {
         if (state is EmployeeAddedSuccess) {

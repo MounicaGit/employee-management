@@ -1,11 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'package:employee_management/bloc/employee_bloc/employee_bloc.dart';
 import 'package:employee_management/views/screens/employee_list.dart';
 
-void main() {
+import 'data/models/hive/employee_web.dart';
+
+void main() async {
+  // Initialize Hive for Flutter (this works for web as well)
+  await Hive.initFlutter();
+
+  // Register the Employee adapter
+  Hive.registerAdapter(EmployeeWebAdapter());
+
+  // Open a Hive box for storing Employee objects
+  await Hive.openBox<EmployeeWeb>('employees');
+
+  await Firebase.initializeApp(
+      options: FirebaseOptions(
+          apiKey: "AIzaSyAlSXyLVpxsmAQbvJqSHZTLWqEfDAG7o1M",
+          authDomain: "raven-english-school.firebaseapp.com",
+          projectId: "raven-english-school",
+          storageBucket: "raven-english-school.appspot.com",
+          messagingSenderId: "532398284543",
+          appId: "1:532398284543:web:853ba40048837d4595f6ca",
+          measurementId: "G-J8TF91RDPY"));
+
   runApp(const MyApp());
 }
 

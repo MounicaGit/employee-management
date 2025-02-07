@@ -1,4 +1,5 @@
 import 'package:employee_management/config/utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../config/app_constants.dart';
@@ -239,6 +240,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
               ),
             ],
           ),
+          if (kIsWeb) const SizedBox(height: 10),
           //Next Tuesday
           Row(
             children: [
@@ -344,7 +346,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
   // Build calendar body
   Container _buildBody(setStateDialog) => Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -352,6 +354,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const SizedBox(height: 5),
             widget.isFromDate
                 ? _buildFromDateButtonsSection(setStateDialog)
                 : _buildToDateButtonsSection(setStateDialog),
@@ -390,7 +393,20 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            child: _buildBody(setStateDialog));
+            child: ConstrainedBox(
+                constraints: BoxConstraints(
+                    minWidth:
+                        kIsWeb ? 500 : MediaQuery.of(context).size.width - 40,
+                    maxWidth:
+                        kIsWeb ? 500 : MediaQuery.of(context).size.width - 40,
+                    minHeight: widget.isFromDate
+                        ? kIsWeb
+                            ? 500
+                            : 300
+                        : kIsWeb
+                            ? 480
+                            : 340),
+                child: _buildBody(setStateDialog)));
       },
     );
   }

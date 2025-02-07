@@ -1,4 +1,4 @@
-import 'package:employee_management/data/models/employee.dart';
+import 'package:employee_management/data/models/sqflite/employee.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -24,7 +24,7 @@ class DatabaseHelper {
   Future<List<Employee>> loadEmployeesData(String status) async {
     final db = await database;
     List<Map<String, dynamic>> employeesData =
-        await db.query('employee', where: 'status=?', whereArgs: [status]);
+    await db.query('employee', where: 'status=?', whereArgs: [status]);
     return employeesData.map((e) => Employee.fromJson(e)).toList();
   }
 
